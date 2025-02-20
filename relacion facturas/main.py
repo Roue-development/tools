@@ -109,26 +109,64 @@ def run():
                     'f_qty': attr.get('Cantidad'),
                     'f_precio': attr.get('ValorUnitario'),
                     'f_total': attr.get('Importe'),
-                    'observaciones': 'No en excel',
+                    'observaciones': f'No en excel, Archivo: {p}',
                 }
 
                 comparison_df = comparison_df._append(row, ignore_index=True)
             else:
                 # not empty
-                matcheo = lookalikes[0]
+                for matcheo in lookalikes:
+                    makeExit = False
 
-                leRow = comparison_df[comparison_df["e_desc"].str.lower() == matcheo].head(1)
-                i = leRow.index[0]
+                    for i, leRow in comparison_df[comparison_df["e_desc"].str.lower() == matcheo].iterrows():
+                        # leRow = comparison_df[comparison_df["e_desc"].str.lower() == matcheo].head(
+                        #     1)
+                        # i = leRow.index[0]
 
-                # check if not already filled
-                if not leRow['f_clave'].any():
-                    comparison_df.at[i, 'f_clave'] = attr.get('ClaveProdServ')
-                    comparison_df.at[i, 'f_desc'] = attr.get('Descripcion')
-                    comparison_df.at[i, 'f_qty'] = attr.get('Cantidad')
-                    comparison_df.at[i, 'f_precio'] = attr.get('ValorUnitario')
-                    comparison_df.at[i, 'f_total'] = attr.get('Importe')
-                else:
-                    comparison_df.at[i, 'observaciones'] += f'Error: columna repetida. {attr.get('Descripcion')} en {p}. \n'
+                        # check if not already filled
+                        if comparison_df.at[i, 'f_clave'] == None and -0.01 < float(leRow['e_qty']) - float(attr.get('Cantidad')) < 0.01:
+                            comparison_df.at[i, 'f_clave'] = attr.get(
+                                'ClaveProdServ')
+                            comparison_df.at[i, 'f_desc'] = attr.get(
+                                'Descripcion')
+                            comparison_df.at[i, 'f_qty'] = attr.get('Cantidad')
+                            comparison_df.at[i, 'f_precio'] = attr.get(
+                                'ValorUnitario')
+                            comparison_df.at[i, 'f_total'] = attr.get(
+                                'Importe')
+                            comparison_df.at[i,
+                                             'observaciones'] = f'Archivo: {p}'
+
+                            makeExit = True
+
+                            break
+
+                        pass
+
+                    if makeExit:
+                        break
+
+                    pass
+
+                pass
+
+                if not makeExit:
+                    row = {
+                        'e_clave': None,
+                        'e_desc': '',
+                        'e_qty': 0,
+                        'e_precio': 0,
+                        'e_total': 0,
+                        'f_clave': attr.get('ClaveProdServ'),
+                        'f_desc': attr.get('Descripcion'),
+                        'f_qty': attr.get('Cantidad'),
+                        'f_precio': attr.get('ValorUnitario'),
+                        'f_total': attr.get('Importe'),
+                        'observaciones': f'Repetida o no tiene match. Archivo: {p}',
+                    }
+
+                    comparison_df = comparison_df._append(
+                        row, ignore_index=True)
 
     comparison_df.to_csv(os.path.join(folder_path, 'datos procesados.csv'))
 
