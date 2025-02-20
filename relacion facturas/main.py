@@ -119,12 +119,22 @@ def run():
                     makeExit = False
 
                     for i, leRow in comparison_df[comparison_df["e_desc"].str.lower() == matcheo].iterrows():
+
                         # leRow = comparison_df[comparison_df["e_desc"].str.lower() == matcheo].head(
                         #     1)
                         # i = leRow.index[0]
 
                         # check if not already filled
-                        if comparison_df.at[i, 'f_clave'] == None and -0.01 < float(leRow['e_qty']) - float(attr.get('Cantidad')) < 0.01:
+                        if comparison_df.at[i, 'f_clave'] == None \
+                        and -0.01 < float(leRow['e_qty']) - float(attr.get('Cantidad')) < 0.01 \
+                        and float(leRow['e_total']) <= float(attr.get('Importe')):
+
+                            observaciones = ''
+
+                            if float(leRow['e_total']) <= float(attr.get(
+                                'Importe')):
+                                observaciones += 'SE ESTA PERDIENDO DINERO. '
+
                             comparison_df.at[i, 'f_clave'] = attr.get(
                                 'ClaveProdServ')
                             comparison_df.at[i, 'f_desc'] = attr.get(
@@ -135,7 +145,7 @@ def run():
                             comparison_df.at[i, 'f_total'] = attr.get(
                                 'Importe')
                             comparison_df.at[i,
-                                             'observaciones'] = f'Archivo: {p}'
+                                             'observaciones'] = f'{observaciones}Archivo: {p}'
 
                             makeExit = True
 
